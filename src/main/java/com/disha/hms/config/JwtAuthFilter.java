@@ -25,22 +25,46 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
+    	
+    	try {
+    		
+    		String authHeader = request.getHeader("Authorization");
 
-        String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
+                if (jwtUtil.isTokenValid(token)) {
+                    String username = jwtUtil.extractUsername(token);
 
-            if (jwtUtil.isTokenValid(token)) {
-                String username = jwtUtil.extractUsername(token);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(username, null, List.of());
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(username, null, List.of());
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
-        }
 
-        filterChain.doFilter(request, response);
+            filterChain.doFilter(request, response);
+    		
+    	} catch (io.jsonwebtoken.security.SignatureException e) {
+            sendJwtError(response, "Invalid JWT signature");
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            sendJwtError(response, "JWT token expired");
+        } catch (io.jsonwebtoken.JwtException e) {
+            sendJwtError(response, "Invalid JWT token");
+        }
+    	
+    }
+    
+    private void sendJwtError(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+
+        response.getWriter().write("""
+        {
+            "status": 401,
+            "error": "Unauthorized",
+            "message": "%s"
+        }
+        """.formatted(message));
     }
 }

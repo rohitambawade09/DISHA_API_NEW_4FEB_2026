@@ -14,8 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.disha.hms.config.JwtUtil;
 import com.disha.hms.service.AuthService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Authentication", description = "APIs related to login, JWT, and user authentication")
 public class AuthController {
 	
 	@Autowired
