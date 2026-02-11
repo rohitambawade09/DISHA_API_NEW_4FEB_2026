@@ -1,7 +1,9 @@
 package com.disha.hms.repo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.query.NativeQuery;
@@ -19,7 +21,6 @@ public class ApiRepoImpl implements ApiRepo {
 	
 	@Override
 	public List<ClientDetailsApiDto> getBusinessDetailsList() {
-		// TODO Auto-generated method stub
 
 		List<ClientDetailsApiDto> list = new ArrayList<>();
 		try {
@@ -100,6 +101,125 @@ public class ApiRepoImpl implements ApiRepo {
 		}
 		
 		return list;
+	}
+
+	@Override
+	public Map<String, Object> getCustomerDetails(String customerCode) {
+		
+		Map<String, Object> obj = new HashMap<>();
+		try {
+			
+			StringBuilder sql = new StringBuilder().append("select     ")
+					.append("	bmn.id lab_id,     ")
+					.append("	coalesce(bmn.lab_name, '-') lab_name,     ")
+					.append("	coalesce(bmn.lab_code, '-') lab_code,     ")
+					.append("	coalesce(bmn.unit_id, 0) unit_id,     ")
+					.append("	coalesce(lookup_det_id_client_project, 0) project_id     ")
+					.append("from     ")
+					.append("	business_master_new bmn     ")
+					.append("where     ")
+					.append("	trim(bmn.lab_code) =:customerCode");
+			NativeQuery sqlres = sessionFactory.getCurrentSession().createNativeQuery(sql.toString())
+								.setParameter("customerCode", customerCode.trim());
+			sqlres.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
+			
+			List<Map<String, Object>> list = sqlres.list();
+			
+			obj = list.get(0);
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return obj;
+	}
+
+	@Override
+	public String getUnitType(Integer unitId) {
+		
+		String res = "";
+		try {
+			
+			StringBuilder sql = new StringBuilder().append("select coalesce(tcld.lookup_det_value, '-') type 	"
+					+ "			from ehat_unit_master eum 	"
+					+ "			inner join tm_cm_lookup_det tcld on eum.unit_for =tcld.lookup_det_id 	"
+					+ "			where  unit_id =:unitId");
+			NativeQuery sqlres = sessionFactory.getCurrentSession().createNativeQuery(sql.toString())
+								 .setParameter("unitId", unitId);
+			
+			res = (String) sqlres.uniqueResult();
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return res;
+	}
+
+	@Override
+	public List<Map<String, Object>> getTestDetailsforGov(Integer unitId, Integer projectId, Integer customerId) {
+
+		List<Map<String, Object>> list = new ArrayList<>();
+		try {
+			
+			StringBuilder sql = new StringBuilder().append("select      ")
+					.append("	coalesce(teuwtm.unit_id, 0)  unit_id,      ")
+					.append("	coalesce(eum.unit_name, '-')  unit_name,      ")
+					.append("	coalesce(teuwtm.project_id, 0) project_id,      ")
+					.append("	coalesce(epm.project_name, '-') project_name,      ")
+					.append("	coalesce(teuwtm.service_id, 0) service_id,      ")
+					.append("	coalesce(teuwtm.b2bcharges, 0) b2bcharges,      ")
+					.append("	coalesce(teuwtm.charges, 0) b2ccharges,      ")
+					.append("	coalesce(es.category_name, '-') category_name,      ")
+					.append("   coalesce(MAX(es.cgscode), '-') subservice_code,		")
+					.append("	coalesce(MAX(pl2.sample_name), '-') sample_type_name,      ")
+					.append("   MAX(pl.id) profile_id		")
+					.append("from      ")
+					.append("	lab_charges_configuration teuwtm      ")
+					.append("inner join ehat_project_master epm on      ")
+					.append("	epm.project_id = teuwtm.project_id      ")
+					.append("inner join ehat_unit_master eum on      ")
+					.append("	eum.unit_id = teuwtm.unit_id      ")
+					.append("inner join ehat_subservice es on      ")
+					.append("	es.id = teuwtm.service_id      ")
+					.append("inner join pathology_labprofile pl on pl.subservice_id = es.id      ")
+					.append("inner join pathology_labsample pl2 on pl2.id = pl.idtestsample       ")
+					.append("where      ")
+					.append("	teuwtm.unit_id =:unitId      ")
+					.append("	and teuwtm.project_id=:projectId     ")
+					.append("	and teuwtm.deleted = 'N'      ")
+					.append("	and teuwtm.customer_name =:customerId      ")
+					.append("	and pl.profilestatus = 'Y'      ")
+					.append("	and pl2.deleted = 'N'      ")
+					.append("group by      ")
+					.append("	1,      ")
+					.append("	2,      ")
+					.append("	3,      ")
+					.append("	4,      ")
+					.append("	5,      ")
+					.append("	6,      ")
+					.append("	7,      ")
+					.append("	8");
+			
+			NativeQuery sqlres = sessionFactory.getCurrentSession().createNativeQuery(sql.toString())
+					             .setParameter("unitId", unitId)
+					             .setParameter("projectId", projectId)
+					             .setParameter("customerId", customerId);
+			sqlres.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
+			
+			list = sqlres.list();
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return list;
+	}
+
+	@Override
+	public List<Map<String, Object>> getTestDetailsforOther(Integer unitId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

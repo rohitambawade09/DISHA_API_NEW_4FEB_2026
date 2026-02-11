@@ -6,17 +6,16 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.disha.hms.dto.ClientDetailsApiDto;
 import com.disha.hms.dto.ResponseOutput;
+import com.disha.hms.dto.TestDetailsResponseDto;
 import com.disha.hms.service.ApiService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.tags.Tags;
 
 @RestController
 @RequestMapping(value = "/api")
@@ -26,7 +25,7 @@ public class ApiController {
 	@Autowired
 	ApiService apiService;
 	
-	@GetMapping("/getBusinessDetailsList")
+	@GetMapping("/getCustomerList")
 	public ResponseEntity<ResponseOutput>  getBusinessDetailsList()
 	{
 		ResponseOutput obj = new ResponseOutput();
@@ -41,10 +40,12 @@ public class ApiController {
 		
 	}
 	
-	@GetMapping("/hello")
-	public ResponseEntity<String> hello()
+	@GetMapping("/getTestbyCustomerId")
+	public ResponseEntity<TestDetailsResponseDto> getTestbyCustomerId(@RequestParam String customerCode)
 	{
-		return ResponseEntity.ok().body("Hello World");
+		TestDetailsResponseDto objData = apiService.getTestbyCustomerId(customerCode);
+		
+		return ResponseEntity.ok().body(objData);
 	}
 	
 }
