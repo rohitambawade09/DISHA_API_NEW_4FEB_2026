@@ -17,8 +17,6 @@ public class ResponseOutput {
 	
 	private String message;
 	
-	private  Integer patientId;
-	
 	private List output;
 
 }

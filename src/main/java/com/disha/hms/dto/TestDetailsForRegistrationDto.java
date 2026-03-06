@@ -1,33 +1,30 @@
 package com.disha.hms.dto;
 
-import java.util.List;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
-public class TestDetailsDto {
-	
+public class TestDetailsForRegistrationDto {
+
 	private Integer subServiceId;
 	
-	private String subServiceCode;
+	private Double amount;
 	
 	private String subServiceName;
-
-	private Integer profileId;
-	
-	private Double b2cCharges;
-	
-	private Double b2bCharges;
-	
-	private String sampleTypeName;
 	
 	private Integer sampleTypeId;
+	
+	private String barCode;
+	
+	private Integer quantity;
 	
 	private String templateWise;
 	
 	private Integer serviceId;
+	
 }
